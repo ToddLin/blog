@@ -2,7 +2,9 @@
 title: C#之XML反序列化的一些坑
 date: 2018-09-17 12:59:14
 categories: .net
-tags: xml,serialize
+tags: 
+    - xml
+    - serialize
 keyworks: xml,serialize
 permalink:
 ---

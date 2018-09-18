@@ -282,7 +282,7 @@ custom_logo:
 # Available value:
 #    normal | night | night eighties | night blue | night bright
 # https://github.com/chriskempson/tomorrow-theme
-highlight_theme: night bright
+highlight_theme: night
 
 
 # ---------------------------------------------------------------
@@ -470,7 +470,7 @@ needmoreshare2:
 google_site_verification: 9934LJbMCGIu0qV7iF6XrzlVU_o3V5prKlCdGLUsE90
 
 # Google Analytics
-google_analytics: UA-125811682-1
+# google_analytics: UA-125811682-1
 
 # Bing Webmaster tools verification setting
 # See: https://www.bing.com/webmaster/

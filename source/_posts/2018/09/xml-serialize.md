@@ -8,7 +8,7 @@ tags:
 keyworks: xml,serialize
 permalink:
 ---
-
+本文首次发布在博客**\[[C#之XML反序列化的一些坑](https://blog.toddlin.site/2018/09/xml-serialize/)\]**
 ##### 背景
 
 我们在.net平台反序列化一份xml文档的时候经常性的会遇到一些很奇怪的问题，要么在反序列化过程中抛出各种异常，要么没有发生异常，可结果却不是我们想要的。抛异常的情况倒是比较容易解决，根据异常信息自己找MSDN文档或者Google搜索，一般都能找到解决办法。麻烦的是没有异常结果却不理想的情况，这种情况往往需要一步步调试跟踪代码，但是微软的底层已经封装，调试起来很困难。
@@ -42,10 +42,11 @@ permalink:
 ##### 一、获取SOAP中Body里的内容报错或者为空
 
 我这里需要获取`DestinationListResponse`元素反序列化成我建的对应的C#实体DestinationListResponse类的对象。代码如下：
-     XmlDocument doc = new XmlDocument();
-            doc.LoadXml(xml);
-            var node = doc.SelectSingleNode("//Body");
-            var innerXml = node.InnerXml;
+
+    XmlDocument doc = new XmlDocument();
+    doc.LoadXml(xml);
+    var node = doc.SelectSingleNode("//Body");
+    var innerXml = node.InnerXml;
 
 这样没有报错，但是获取到`node`的值=null。然后我把`var node = doc.SelectSingleNode("//Body");`这句代码改成`var node = doc.SelectSingleNode("//soapenv:Body");`之后再调试。这句代码直接就抛出异常了，提示类似缺少名称空间之类的信息。然后我发现`SelectSingleNode`正好有个参数类型是管理名称空间的，我就在这句代码之前把所有名称空间全部加上，最后完整的代码就长这样：
 

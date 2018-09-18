@@ -133,15 +133,6 @@
 
 
 
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-  ga('create', 'UA-125811682-1', 'auto');
-  ga('send', 'pageview');
-</script>
-
 
 
 
@@ -347,7 +338,8 @@
       
         
           
-            <h5 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h5><p>我们在.net平台反序列化一份xml文档的时候经常性的会遇到一些很奇怪的问题，要么在反序列化过程中抛出各种异常，要么没有发生异常，可结果却不是我们想要的。抛异常的情况倒是比较容易解决，根据异常信息自己找MSDN文档或者Google搜索，一般都能找到解决办法。麻烦的是没有异常结果却不理想的情况，这种情况往往需要一步步调试跟踪代码，但是微软的底层已经封装，调试起来很困难。</p>
+            <p>本文首次发布在博客<strong>[<a href="https://blog.toddlin.site/2018/09/xml-serialize/">C#之XML反序列化的一些坑</a>]</strong></p>
+<h5 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h5><p>我们在.net平台反序列化一份xml文档的时候经常性的会遇到一些很奇怪的问题，要么在反序列化过程中抛出各种异常，要么没有发生异常，可结果却不是我们想要的。抛异常的情况倒是比较容易解决，根据异常信息自己找MSDN文档或者Google搜索，一般都能找到解决办法。麻烦的是没有异常结果却不理想的情况，这种情况往往需要一步步调试跟踪代码，但是微软的底层已经封装，调试起来很困难。</p>
 <p>下面是我在反序列化的时候遇到过的一些坑。先上一段需要反序列化的代码。</p>
 <h5 id="目标XML"><a href="#目标XML" class="headerlink" title="目标XML"></a>目标XML</h5><pre><code>&lt;?xml version=&apos;1.0&apos; encoding=&apos;UTF-8&apos;?&gt;
 &lt;soapenv:Envelope
@@ -369,8 +361,12 @@
     &lt;/soapenv:Body&gt;
 &lt;/soapenv:Envelope&gt;
 </code></pre><p>这一段XML，相信大家都能看懂。这里涉及到几个XML的概念如下：声明、名称空间、前缀、元素、属性。对这几个概念不了解的自行Google。了解这几个概念之后，构建C#实体类就很简单了，复杂元素构建成类，简单元素和属性作为类的字段。我创建了对应的实体类之后开始反序列化就遇到了一些问题。</p>
-<h5 id="一、获取SOAP中Body里的内容报错或者为空"><a href="#一、获取SOAP中Body里的内容报错或者为空" class="headerlink" title="一、获取SOAP中Body里的内容报错或者为空"></a>一、获取SOAP中Body里的内容报错或者为空</h5><p>我这里需要获取<code>DestinationListResponse</code>元素反序列化成我建的对应的C#实体DestinationListResponse类的对象。代码如下：<br>     XmlDocument doc = new XmlDocument();<br>            doc.LoadXml(xml);<br>            var node = doc.SelectSingleNode(“//Body”);<br>            var innerXml = node.InnerXml;</p>
-<p>这样没有报错，但是获取到<code>node</code>的值=null。然后我把<code>var node = doc.SelectSingleNode(&quot;//Body&quot;);</code>这句代码改成<code>var node = doc.SelectSingleNode(&quot;//soapenv:Body&quot;);</code>之后再调试。这句代码直接就抛出异常了，提示类似缺少名称空间之类的信息。然后我发现<code>SelectSingleNode</code>正好有个参数类型是管理名称空间的，我就在这句代码之前把所有名称空间全部加上，最后完整的代码就长这样：</p>
+<h5 id="一、获取SOAP中Body里的内容报错或者为空"><a href="#一、获取SOAP中Body里的内容报错或者为空" class="headerlink" title="一、获取SOAP中Body里的内容报错或者为空"></a>一、获取SOAP中Body里的内容报错或者为空</h5><p>我这里需要获取<code>DestinationListResponse</code>元素反序列化成我建的对应的C#实体DestinationListResponse类的对象。代码如下：</p>
+<pre><code>XmlDocument doc = new XmlDocument();
+doc.LoadXml(xml);
+var node = doc.SelectSingleNode(&quot;//Body&quot;);
+var innerXml = node.InnerXml;
+</code></pre><p>这样没有报错，但是获取到<code>node</code>的值=null。然后我把<code>var node = doc.SelectSingleNode(&quot;//Body&quot;);</code>这句代码改成<code>var node = doc.SelectSingleNode(&quot;//soapenv:Body&quot;);</code>之后再调试。这句代码直接就抛出异常了，提示类似缺少名称空间之类的信息。然后我发现<code>SelectSingleNode</code>正好有个参数类型是管理名称空间的，我就在这句代码之前把所有名称空间全部加上，最后完整的代码就长这样：</p>
 <pre><code>XmlDocument doc = new XmlDocument();
         doc.LoadXml(xml);
  XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
@@ -514,7 +510,7 @@ public class CityClass
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">2</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -614,6 +610,26 @@ public class CityClass
 
 
         
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
 
 
 
@@ -761,6 +777,21 @@ public class CityClass
   
 
   
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
 
   
   
